@@ -10,11 +10,11 @@ public class GridElement : MonoBehaviour
     
 public TMP_Text displayText;
 
-void Start()
-{
-    SetNumber();
+// void Start()
+// {
+//     SetNumber();
                 
-}
+// }
 
     public void SetNumber()
     {
