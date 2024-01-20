@@ -58,5 +58,19 @@ public class Grid : MonoBehaviour
         }
         
     }
+
+ public void RefreshBtn()
+    {
+        foreach (var gridElement in gridElements)
+        {
+            GridElement gridElementScript = gridElement.GetComponent<GridElement>();
+            if (gridElementScript != null)
+            {
+                gridElementScript.ResetText();
+            }
+        }
+        SelectedGrid();
+    }   
+ 
 }
     

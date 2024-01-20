@@ -24,4 +24,10 @@ public TMP_Text displayText;
        
     }
 
+     public void ResetText()
+    {
+        displayText.text = string.Empty;
+       
+    }
+
 }
