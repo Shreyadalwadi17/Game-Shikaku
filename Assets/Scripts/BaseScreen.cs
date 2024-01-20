@@ -8,13 +8,14 @@ public enum ScreenType
    Gameplay
 
 }
+
+
 public class BaseScreen : MonoBehaviour
 {
     
     public ScreenType screenType;
     public Canvas canvas;
-
-
+  
     public void Awake()
     {
         canvas = GetComponent<Canvas>();

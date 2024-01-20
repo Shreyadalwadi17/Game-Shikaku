@@ -4,21 +4,34 @@ using UnityEngine;
 
 public class DrawBox : MonoBehaviour
 {
-    public GameObject rectanglePrefab;
-    private Camera mainCamera;
+    public LineRenderer lineRendererPrefab;
+    public Camera mainCamera;
 
     private Vector2 startPoint;
     private Vector2 endPoint;
     private bool isDrawing = false;
+    private List<LineRenderer> drawnRectangles = new List<LineRenderer>();
 
     void Start()
     {
-        mainCamera = Camera.main;
+        if (lineRendererPrefab == null)
+        {
+            lineRendererPrefab = new GameObject("LineRendererPrefab").AddComponent<LineRenderer>();
+            lineRendererPrefab.material = new Material(Shader.Find("Sprites/Default"));
+            lineRendererPrefab.startWidth = 0.1f;
+            lineRendererPrefab.endWidth = 0.1f;
+            lineRendererPrefab.material.color = Color.black; 
+        }
+
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && IsMouseOverValidArea())
         {
             StartDrawingRectangle();
         }
@@ -34,35 +47,44 @@ public class DrawBox : MonoBehaviour
         }
     }
 
+    bool IsMouseOverValidArea()
+{
+    Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+    RaycastHit hit;
+    if (Physics.Raycast(ray, out hit))
+    {
+        bool isOverValidArea = hit.collider.CompareTag("square");
+        Debug.Log("Compare Tag: " + isOverValidArea);
+        return isOverValidArea;
+    }
+
+    return false;
+}
+
     void StartDrawingRectangle()
     {
         startPoint = GetMouseWorldPosition();
+        endPoint = startPoint;
         isDrawing = true;
+
+        lineRendererPrefab.positionCount = 5;
+        lineRendererPrefab.SetPositions(GetRectangleVertices());
     }
 
     void UpdateRectangle()
     {
         endPoint = GetMouseWorldPosition();
+        lineRendererPrefab.SetPositions(GetRectangleVertices());
     }
 
     void StopDrawingRectangle()
     {
         isDrawing = false;
 
-        // Calculate the size of the rectangle
-        Vector2 size = endPoint - startPoint;
-
-        // Create a new GameObject with a LineRenderer component
-        GameObject newRectangle = Instantiate(rectanglePrefab, startPoint + size / 2f, Quaternion.identity);
-        LineRenderer lineRenderer = newRectangle.GetComponent<LineRenderer>();
-
-        // Set LineRenderer positions
-        lineRenderer.positionCount = 5;
-        lineRenderer.SetPositions(GetRectangleVertices(startPoint, endPoint));
-
-        // Optionally, set other properties of the LineRenderer, such as color, width, etc.
-
-        // You can also perform additional logic with the new rectangle GameObject if needed.
+        LineRenderer newRectangle = Instantiate(lineRendererPrefab);
+        newRectangle.positionCount = 5;
+        newRectangle.SetPositions(GetRectangleVertices());
+        drawnRectangles.Add(newRectangle);
     }
 
     Vector2 GetMouseWorldPosition()
@@ -72,15 +94,14 @@ public class DrawBox : MonoBehaviour
         return mainCamera.ScreenToWorldPoint(mousePosition);
     }
 
-    Vector3[] GetRectangleVertices(Vector2 start, Vector2 end)
+    Vector3[] GetRectangleVertices()
     {
-        // Calculate the vertices of the rectangle
         Vector3[] vertices = new Vector3[5];
-        vertices[0] = start;
-        vertices[1] = new Vector2(start.x, end.y);
-        vertices[2] = end;
-        vertices[3] = new Vector2(end.x, start.y);
-        vertices[4] = start;
+        vertices[0] = startPoint;
+        vertices[1] = new Vector2(startPoint.x, endPoint.y);
+        vertices[2] = endPoint;
+        vertices[3] = new Vector2(endPoint.x, startPoint.y);
+        vertices[4] = startPoint;
 
         return vertices;
     }
