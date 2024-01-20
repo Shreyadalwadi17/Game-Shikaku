@@ -8,8 +8,8 @@ using TMPro;
 public class GridElement : MonoBehaviour
 {
     public TMP_Text displayText;
-    private static int remainingSum = 49;
-    private static int generatedNumbers = 1;
+    private static int remainingSum = 50;
+    private static int generatedNumbers = 0;
 
     public void SetNumber()
     {
@@ -28,8 +28,8 @@ public class GridElement : MonoBehaviour
 
     public void ResetText()
     {
-        remainingSum = 49;
-        generatedNumbers = 1;
+        remainingSum = 50;
+        generatedNumbers = 0;
         displayText.text = string.Empty;
     }
 }

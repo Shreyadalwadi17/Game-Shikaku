@@ -14,13 +14,14 @@ public class DrawBox : MonoBehaviour
 
     void Start()
     {
-        if (lineRendererPrefab == null)
+        if (lineRendererPrefab != null)
         {
+            // Set up LineRendererPrefab
             lineRendererPrefab = new GameObject("LineRendererPrefab").AddComponent<LineRenderer>();
             lineRendererPrefab.material = new Material(Shader.Find("Sprites/Default"));
             lineRendererPrefab.startWidth = 0.1f;
             lineRendererPrefab.endWidth = 0.1f;
-            lineRendererPrefab.material.color = Color.black; 
+            lineRendererPrefab.material.color = Color.black;
         }
 
         if (mainCamera == null)
@@ -48,18 +49,17 @@ public class DrawBox : MonoBehaviour
     }
 
     bool IsMouseOverValidArea()
-{
-    Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-    RaycastHit hit;
-    if (Physics.Raycast(ray, out hit))
     {
-        bool isOverValidArea = hit.collider.CompareTag("square");
-        Debug.Log("Compare Tag: " + isOverValidArea);
-        return isOverValidArea;
-    }
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            bool isOverValidArea = hit.collider.CompareTag("square");
+            return isOverValidArea;
+        }
 
-    return false;
-}
+        return false;
+    }
 
     void StartDrawingRectangle()
     {
@@ -81,10 +81,48 @@ public class DrawBox : MonoBehaviour
     {
         isDrawing = false;
 
-        LineRenderer newRectangle = Instantiate(lineRendererPrefab);
-        newRectangle.positionCount = 5;
-        newRectangle.SetPositions(GetRectangleVertices());
-        drawnRectangles.Add(newRectangle);
+        // Check if the new rectangle overlaps with existing ones
+        if (!IsOverlappingExistingRectangles())
+        {
+            LineRenderer newRectangle = Instantiate(lineRendererPrefab);
+            newRectangle.positionCount = 5;
+            newRectangle.SetPositions(GetRectangleVertices());
+            drawnRectangles.Add(newRectangle);
+        }
+    }
+
+    bool IsOverlappingExistingRectangles()
+    {
+        Rect newRect = new Rect(Mathf.Min(startPoint.x, endPoint.x),
+                                Mathf.Min(startPoint.y, endPoint.y),
+                                Mathf.Abs(endPoint.x - startPoint.x),
+                                Mathf.Abs(endPoint.y - startPoint.y));
+
+        foreach (LineRenderer existingRectangle in drawnRectangles)
+        {
+            Rect existingRect = GetRectFromLineRenderer(existingRectangle);
+
+            if (existingRect.Overlaps(newRect))
+            {
+                
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    Rect GetRectFromLineRenderer(LineRenderer renderer)
+    {
+        Vector3[] positions = new Vector3[renderer.positionCount];
+        renderer.GetPositions(positions);
+
+        float minX = Mathf.Min(positions[0].x, positions[2].x);
+        float minY = Mathf.Min(positions[0].y, positions[2].y);
+        float width = Mathf.Abs(positions[2].x - positions[0].x);
+        float height = Mathf.Abs(positions[2].y - positions[0].y);
+
+        return new Rect(minX, minY, width, height);
     }
 
     Vector2 GetMouseWorldPosition()
